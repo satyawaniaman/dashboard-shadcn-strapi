@@ -152,4 +152,35 @@
     body {
         @apply bg-background text-foreground;
     }
+
+    /* Sidebar icon size override */
+    [data-sidebar="menu-button"] svg {
+        width: 1.25rem !important;
+        height: 1.25rem !important;
+    }
+
+    /* Active state enhancement for collapsed sidebar */
+    [data-sidebar="menu-button"][data-active="true"] {
+        background-color: var(--sidebar-accent) !important;
+        color: var(--sidebar-accent-foreground) !important;
+        font-weight: 500;
+    }
+
+    /* Add a subtle indicator for active items in collapsed mode */
+    [data-collapsible="icon"] [data-sidebar="menu-button"][data-active="true"] {
+        position: relative;
+    }
+
+    [data-collapsible="icon"]
+        [data-sidebar="menu-button"][data-active="true"]::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 3px;
+        height: 60%;
+        background-color: var(--sidebar-primary);
+        border-radius: 0 4px 4px 0;
+    }
 }

@@ -11,6 +11,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 export function NavDocuments({
   items,
@@ -22,14 +23,20 @@ export function NavDocuments({
   }[];
 }) {
   const { isMobile } = useSidebar();
+  const pathname = usePathname();
 
   return (
-    <SidebarGroup className="group-data-[collapsible=icon]:hidden">
+    <SidebarGroup>
       <SidebarGroupLabel>Reports</SidebarGroupLabel>
       <SidebarMenu>
         {items.map((item) => (
           <SidebarMenuItem key={item.name}>
-            <SidebarMenuButton asChild>
+            <SidebarMenuButton
+              asChild
+              isActive={pathname === item.url}
+              tooltip={item.name}
+              className="data-[active=true]:bg-sidebar-accent data-[active=true]:text-sidebar-accent-foreground"
+            >
               <a href={item.url}>
                 <item.icon />
                 <span>{item.name}</span>
@@ -39,7 +46,10 @@ export function NavDocuments({
         ))}
         <SidebarMenuItem>
           <Link href="/dashboard/reports">
-            <SidebarMenuButton className="text-sidebar-foreground/70">
+            <SidebarMenuButton
+              className="text-sidebar-foreground/70"
+              tooltip="More Reports"
+            >
               <IconDots className="text-sidebar-foreground/70" />
               <span>More</span>
             </SidebarMenuButton>
