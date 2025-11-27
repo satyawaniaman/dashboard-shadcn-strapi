@@ -7,6 +7,7 @@ import Link from "next/link";
 import { signIn } from "next-auth/react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { handleApiError } from "@/app/lib/handleApiError";
 
 export default function LoginForm() {
   const [isLoading, setIsLoading] = useState(false);
@@ -25,22 +26,16 @@ export default function LoginForm() {
       });
 
       if (result?.error) {
-        toast.error("Login failed", {
-          description: result.error || "Invalid email or password",
-        });
+        toast.error(result.error);
       } else if (result?.ok) {
         toast.success("Login successful!");
         window.location.href = "/";
       } else {
-        toast.error("Login failed", {
-          description: "Please check your credentials and try again",
-        });
+        toast.error("Please check your credentials and try again");
       }
     } catch (error) {
-      toast.error("An error occurred", {
-        description:
-          error instanceof Error ? error.message : "Please try again later",
-      });
+      const errorMessage = handleApiError(error, "Login failed");
+      toast.error(errorMessage);
     } finally {
       setIsLoading(false);
     }

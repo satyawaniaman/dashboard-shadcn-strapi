@@ -26,9 +26,38 @@ import { toast } from "sonner";
 
 interface Category {
   id: number;
+  documentId: string;
+  name: string;
+  description: string;
+}
+
+interface Image {
+  id: number;
+  documentId: string;
+  name: string;
+  alternativeText: string | null;
+  caption: string | null;
+  url: string;
+  formats?: {
+    thumbnail?: {
+      url: string;
+    };
+    small?: {
+      url: string;
+    };
+  };
+}
+
+interface Product {
+  id: number;
   name: string;
   description: string;
   documentId: string;
+  price: number;
+  stock: number;
+  barcode: string | null;
+  category: Category | null;
+  image: Image[];
 }
 
 interface PaginationMeta {
@@ -44,7 +73,7 @@ interface Filters {
 }
 
 const Page = () => {
-  const [categories, setCategories] = useState<Category[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [meta, setMeta] = useState<PaginationMeta | null>(null);
   const [page, setPage] = useState(1);
@@ -54,7 +83,7 @@ const Page = () => {
     description: "",
   });
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [selectedItem, setSelectedItem] = useState<Category | null>(null);
+  const [selectedItem, setSelectedItem] = useState<Product | null>(null);
 
   const handleFilterChange = (key: string, value: string) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
@@ -66,7 +95,8 @@ const Page = () => {
       const query = new URLSearchParams();
       query.set("pagination[page]", String(page));
       query.set("pagination[pageSize]", String(pageSize));
-
+      query.set("populate[0]", "category");
+      query.set("populate[1]", "image");
       if (filters.name) {
         query.set("filters[name][$containsi]", filters.name);
       }
@@ -80,26 +110,12 @@ const Page = () => {
 
     setLoading(true);
     try {
-      const response = await axiosInstance.get(
-        `/api/categories?${buildQuery()}`,
-      );
-      const apiData = response.data.data.map(
-        (item: {
-          id: number;
-          name: string;
-          description: string;
-          documentId: string;
-        }) => ({
-          id: item.id,
-          name: item.name,
-          description: item.description,
-          documentId: item.documentId,
-        }),
-      );
-      setCategories(apiData);
+      const response = await axiosInstance.get(`/api/products?${buildQuery()}`);
+
+      setProducts(response.data.data);
       setMeta(response.data.meta.pagination);
     } catch (error) {
-      console.log("Failed to fetch categories:", error);
+      console.log("Failed to fetch products:", error);
     } finally {
       setLoading(false);
     }
@@ -115,16 +131,16 @@ const Page = () => {
     setPage(1);
   };
 
-  const handleDelete = async (item: Category) => {
+  const handleDelete = async (item: Product) => {
     if (!confirm(`Are you sure you want to delete "${item.name}"?`)) return;
 
     try {
-      await axiosInstance.delete(`/api/categories/${item.documentId}`);
+      await axiosInstance.delete(`/api/products/${item.documentId}`);
       await fetchData();
-      toast.success("Category deleted successfully");
+      toast.success("Product deleted successfully");
     } catch (error) {
       console.log("Delete failed: ", error);
-      toast.error("Failed to delete category");
+      toast.error("Failed to delete product");
     }
   };
 
@@ -142,9 +158,9 @@ const Page = () => {
     <div className="py-4 md:py-6 px-4 lg:px-6">
       <Card className="@container/card">
         <CardHeader>
-          <CardTitle>Categories</CardTitle>
+          <CardTitle>Products</CardTitle>
           <CardDescription>
-            <span>List of categories</span>
+            <span>List of products</span>
           </CardDescription>
 
           <CardAction>
@@ -173,19 +189,19 @@ const Page = () => {
           {loading ? (
             <p className="text-muted-foreground">Loading...</p>
           ) : (
-            <DataTable columns={columns} data={categories} />
+            <DataTable columns={columns} data={products} />
           )}
 
           <div className="flex flex-col sm:flex-row gap-2 sm:gap-0 justify-between items-center mt-4 text-sm text-muted-foreground">
-            {/*{meta && (
+            {meta && (
               <>
-                {categories.length === 0
+                {products.length === 0
                   ? "No rows"
                   : `Showing ${(meta.page - 1) * meta.pageSize + 1} to ${
-                      (meta.page - 1) * meta.pageSize + categories.length
+                      (meta.page - 1) * meta.pageSize + products.length
                     } of ${meta.total} rows`}
               </>
-            )}*/}
+            )}
 
             <div className="flex items-center gap-2">
               <Select

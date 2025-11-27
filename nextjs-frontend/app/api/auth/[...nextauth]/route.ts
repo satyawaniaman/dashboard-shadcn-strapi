@@ -1,7 +1,8 @@
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import axios from "axios";
 import { z } from "zod";
+import axiosAuth from "@/app/lib/axios-auth";
+import { handleApiError } from "@/app/lib/handleApiError";
 
 const credentialsSchema = z.object({
   email: z.string().email("Invalid email address"),
@@ -19,8 +20,6 @@ const strapiResponseSchema = z.object({
   }),
 });
 
-const STRAPI_URL =
-  process.env.NEXT_PUBLIC_STRAPI_URL || "http://localhost:1337";
 const NEXTAUTH_SECRET =
   process.env.NEXTAUTH_SECRET ||
   "development-secret-change-in-production-min-32-characters-long";
@@ -37,16 +36,10 @@ const handler = NextAuth({
         try {
           const validatedCredentials = credentialsSchema.parse(credentials);
 
-          const response = await axios.post(
-            `${STRAPI_URL}/api/auth/local`,
-            {
-              identifier: validatedCredentials.email,
-              password: validatedCredentials.password,
-            },
-            {
-              headers: { "Content-Type": "application/json" },
-            },
-          );
+          const response = await axiosAuth.post("/api/auth/local", {
+            identifier: validatedCredentials.email,
+            password: validatedCredentials.password,
+          });
 
           const validatedData = strapiResponseSchema.parse(response.data);
 
@@ -59,17 +52,8 @@ const handler = NextAuth({
             jwt: validatedData.jwt,
           };
         } catch (error) {
-          if (axios.isAxiosError(error)) {
-            const message =
-              error.response?.data?.error?.message || "Authentication failed";
-            throw new Error(message);
-          }
-          if (error instanceof z.ZodError) {
-            throw new Error(
-              `Validation error: ${error.issues.map((i) => i.message).join(", ")}`,
-            );
-          }
-          throw new Error("An unexpected error occurred");
+          const errorMessage = handleApiError(error, "Authentication failed");
+          throw new Error(errorMessage);
         }
       },
     }),

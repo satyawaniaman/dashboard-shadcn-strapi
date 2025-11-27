@@ -30,6 +30,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
+import Link from "next/link";
 
 const data = {
   navMain: [
@@ -147,12 +148,14 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               tooltip="Inventory Dashboard"
               className="data-[slot=sidebar-menu-button]:!p-1.5"
             >
-              <a href="#">
+              <div>
                 <IconBuildingWarehouse className="!size-6" />
-                <span className="text-base font-semibold">
-                  Inventory Dashboard
-                </span>
-              </a>
+                <Link href="/dashboard">
+                  <span className="text-base font-semibold">
+                    Inventory Dashboard
+                  </span>
+                </Link>
+              </div>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>

@@ -8,26 +8,20 @@ import { signIn } from "next-auth/react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
-import axios from "axios";
+import axiosAuth from "@/app/lib/axios-auth";
+import { handleApiError } from "@/app/lib/handleApiError";
 
 const registerSchema = z.object({
-  firstName: z.string().min(2, "First name must be at least 2 characters"),
-  lastName: z.string().min(2, "Last name must be at least 2 characters"),
   username: z.string().min(3, "Username must be at least 3 characters"),
   email: z.string().email("Invalid email address"),
   password: z.string().min(6, "Password must be at least 6 characters"),
 });
-
-const STRAPI_URL =
-  process.env.NEXT_PUBLIC_STRAPI_URL || "http://localhost:1337";
 
 type RegisterFormData = z.infer<typeof registerSchema>;
 
 export default function RegisterForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState<RegisterFormData>({
-    firstName: "",
-    lastName: "",
     username: "",
     email: "",
     password: "",
@@ -52,12 +46,10 @@ export default function RegisterForm() {
     try {
       const validatedData = registerSchema.parse(formData);
 
-      await axios.post(`${STRAPI_URL}/api/auth/local/register`, {
+      await axiosAuth.post("/api/auth/local/register", {
         username: validatedData.username,
         email: validatedData.email,
         password: validatedData.password,
-        firstName: validatedData.firstName,
-        lastName: validatedData.lastName,
       });
 
       toast.success("Account created successfully!");
@@ -74,11 +66,7 @@ export default function RegisterForm() {
         window.location.href = "/login";
       }
     } catch (error) {
-      if (axios.isAxiosError(error)) {
-        const message =
-          error.response?.data?.error?.message || "Registration failed";
-        toast.error("Registration failed", { description: message });
-      } else if (error instanceof z.ZodError) {
+      if (error instanceof z.ZodError) {
         const fieldErrors: Partial<Record<keyof RegisterFormData, string>> = {};
         error.issues.forEach((issue) => {
           if (issue.path[0]) {
@@ -89,7 +77,8 @@ export default function RegisterForm() {
         setErrors(fieldErrors);
         toast.error("Please check the form for errors");
       } else {
-        toast.error("An error occurred");
+        const errorMessage = handleApiError(error, "Registration failed");
+        toast.error(errorMessage);
       }
     } finally {
       setIsLoading(false);
@@ -177,45 +166,6 @@ export default function RegisterForm() {
           </div>
 
           <div className="space-y-5">
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-2">
-                <Label htmlFor="firstName" className="block text-sm">
-                  First name
-                </Label>
-                <Input
-                  type="text"
-                  required
-                  name="firstName"
-                  id="firstName"
-                  value={formData.firstName}
-                  onChange={handleChange}
-                  disabled={isLoading}
-                  className={errors.firstName ? "border-red-500" : ""}
-                />
-                {errors.firstName && (
-                  <p className="text-xs text-red-500">{errors.firstName}</p>
-                )}
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="lastName" className="block text-sm">
-                  Last name
-                </Label>
-                <Input
-                  type="text"
-                  required
-                  name="lastName"
-                  id="lastName"
-                  value={formData.lastName}
-                  onChange={handleChange}
-                  disabled={isLoading}
-                  className={errors.lastName ? "border-red-500" : ""}
-                />
-                {errors.lastName && (
-                  <p className="text-xs text-red-500">{errors.lastName}</p>
-                )}
-              </div>
-            </div>
-
             <div className="space-y-2">
               <Label htmlFor="username" className="block text-sm">
                 Username
