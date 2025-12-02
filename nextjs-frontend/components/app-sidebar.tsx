@@ -113,17 +113,17 @@ const data = {
   documents: [
     {
       name: "Daily Sales",
-      url: "/dashboard/reports/todaysales",
+      url: "/dashboard/reports?tab=daily",
       icon: IconCalendar,
     },
     {
       name: "Weekly Sales",
-      url: "/dashboard/reports/weeklysales",
+      url: "/dashboard/reports?tab=weekly",
       icon: IconReport,
     },
     {
       name: "Monthly Sales",
-      url: "/dashboard/reports/monthlysales",
+      url: "/dashboard/reports?tab=monthly",
       icon: IconFileWord,
     },
   ],
