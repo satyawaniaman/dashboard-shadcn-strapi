@@ -15,7 +15,7 @@ import { ChartConfig, ChartContainer } from "@/components/ui/chart";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { JetBrains_Mono } from "next/font/google";
-import { useMotionValueEvent, useSpring } from "framer-motion";
+import { useMotionValueEvent, useSpring } from "motion/react";
 
 const jetBrainsMono = JetBrains_Mono({
   subsets: ["latin"],
@@ -52,7 +52,7 @@ const chartConfig = {
 
 export function ValueLineBarChart() {
   const [activeIndex, setActiveIndex] = React.useState<number | undefined>(
-    undefined
+    undefined,
   );
 
   const maxValueIndex = React.useMemo(() => {
@@ -65,7 +65,7 @@ export function ValueLineBarChart() {
       (max, data, index) => {
         return data.desktop > max.value ? { index, value: data.desktop } : max;
       },
-      { index: 0, value: 0 }
+      { index: 0, value: 0 },
     );
   }, [activeIndex]);
 
