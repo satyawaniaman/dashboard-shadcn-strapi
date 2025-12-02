@@ -9,6 +9,12 @@ const nextConfig: NextConfig = {
         port: "1337",
         pathname: "/uploads/**",
       },
+      {
+        protocol: "https",
+        hostname: process.env.NEXT_PUBLIC_STRAPI_URL || "",
+        port: "",
+        pathname: "/uploads/**",
+      },
     ],
   },
 };
